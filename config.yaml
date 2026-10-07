@@ -1,0 +1,135 @@
+# =====================================================================
+# Landfill Detection from Satellite Imagery - project configuration
+# Every script and the Streamlit app read this file. Edit here, not in code.
+# =====================================================================
+
+project:
+  name: "Landfill Detection from Satellite Imagery"
+  version: "1.0.0"
+  seed: 42
+
+paths:
+  data_root: "data"
+  raw_dir: "data/raw"              # downloaded / extracted source imagery
+  interim_dir: "data/interim"      # manifests, split files
+  processed_dir: "data/processed"  # cached tensors / resized tiles (optional)
+  custom_dir: "data/custom"        # YOUR OWN labelled images: data/custom/<class>/*.jpg
+  models_dir: "models"
+  reports_dir: "reports"
+  logs_dir: "reports/logs"
+
+# ---------------------------------------------------------------------
+# Dataset
+# ---------------------------------------------------------------------
+data:
+  source: "eurosat"          # eurosat | custom | synthetic
+  image_size: [128, 128]     # network input size (EuroSAT tiles are 64x64 native)
+  channels: 3
+  # Stratified split fractions (must sum to 1.0)
+  splits:
+    train: 0.70
+    val: 0.15
+    test: 0.15
+  batch_size: 32
+  shuffle_buffer: 4096
+  cache: true                # cache decoded images in RAM (turn off if <8 GB RAM)
+  max_per_class: 0           # 0 = use everything; set e.g. 800 for a fast smoke run
+
+  download:
+    # Tried in order. First one that returns a valid zip wins.
+    mirrors:
+      - "https://zenodo.org/records/7711810/files/EuroSAT_RGB.zip?download=1"
+      - "https://huggingface.co/datasets/torchgeo/eurosat/resolve/main/EuroSAT.zip"
+      - "https://madm.dfki.de/files/sentinel/EuroSAT.zip"
+    archive_name: "EuroSAT_RGB.zip"
+    min_bytes: 20000000      # sanity check: a real EuroSAT zip is ~90 MB
+
+# ---------------------------------------------------------------------
+# Task definition
+#
+# EuroSAT has no dedicated "Landfill" class. Landfills and active waste
+# sites are, spectrally and texturally, bare/disturbed anthropogenic
+# surfaces - which is exactly what the Industrial and Highway classes
+# capture. We therefore train on a PROXY task:
+#
+#     positive  = "waste-site-like / disturbed anthropogenic surface"
+#     negative  = natural land cover + ordinary residential
+#
+# This gives a genuine, reproducible satellite-imagery detector and a
+# feature extractor that transfers to real landfill labels. To train on
+# real landfill data, drop your images into data/custom/landfill and
+# data/custom/not_landfill and set  data.source: custom  above.
+# See reports/METHODOLOGY.md for the honest discussion of this choice.
+# ---------------------------------------------------------------------
+task:
+  mode: "binary"             # binary | multiclass
+  positive_label: "landfill_candidate"
+  negative_label: "clean_land"
+  positive_classes:
+    - "Industrial"
+    - "Highway"
+  negative_classes:
+    - "Forest"
+    - "Pasture"
+    - "HerbaceousVegetation"
+    - "River"
+    - "SeaLake"
+    - "AnnualCrop"
+    - "PermanentCrop"
+    - "Residential"
+  # Decision threshold used at inference for the positive class
+  threshold: 0.50
+
+# ---------------------------------------------------------------------
+# Model
+# ---------------------------------------------------------------------
+model:
+  backbone: "mobilenetv2"    # mobilenetv2 | efficientnetb0 | resnet50v2
+  weights: "imagenet"        # imagenet | null (train from scratch)
+  dropout: 0.3
+  dense_units: 256
+  l2: 0.0001
+  label_smoothing: 0.02
+
+# ---------------------------------------------------------------------
+# Training  (two phases: frozen head warm-up, then fine-tuning)
+# ---------------------------------------------------------------------
+train:
+  epochs_head: 8
+  epochs_finetune: 12
+  lr_head: 0.001
+  lr_finetune: 0.00002
+  unfreeze_last_n: 40        # backbone layers unfrozen in phase 2
+  early_stopping_patience: 5
+  reduce_lr_patience: 2
+  use_class_weights: true
+  mixed_precision: false     # set true only on an NVIDIA GPU
+
+augment:
+  horizontal_flip: true
+  vertical_flip: true
+  rotation: 0.25             # fraction of 2*pi
+  zoom: 0.15
+  translation: 0.10
+  brightness: 0.15
+  contrast: 0.15
+
+# ---------------------------------------------------------------------
+# Large-scene sliding-window scan
+# ---------------------------------------------------------------------
+scan:
+  tile_size: 128             # pixels of the source scene per tile
+  overlap: 0.5               # 0 = no overlap, 0.5 = 50% stride overlap
+  batch_size: 64
+  min_confidence: 0.60       # tiles below this are not reported as detections
+  merge_iou: 0.30            # boxes overlapping more than this are merged
+  max_tiles: 6000            # safety cap so a huge upload cannot hang the app
+
+# ---------------------------------------------------------------------
+# Web app
+# ---------------------------------------------------------------------
+app:
+  title: "Landfill Detection - Satellite Monitoring Console"
+  max_upload_mb: 200
+  gradcam_alpha: 0.45
+  gradcam_colormap: "jet"

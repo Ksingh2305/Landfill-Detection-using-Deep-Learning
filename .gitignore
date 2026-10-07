@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Data and artifacts (regenerate with the scripts)
+data/raw/
+data/interim/
+data/processed/
+data/samples/
+models/*.keras
+models/*.h5
+models/model_meta.json
+reports/figures/
+reports/logs/
+reports/scans/
+reports/*.csv
+reports/metrics.json
+
+# Keep the folder structure in git
+!data/.gitkeep
+!models/.gitkeep
+!reports/.gitkeep
+
+# Streamlit / OS
+.streamlit/secrets.toml
+.DS_Store
+Thumbs.db
+desktop.ini
