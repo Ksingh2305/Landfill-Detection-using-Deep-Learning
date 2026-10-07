@@ -1,0 +1,116 @@
+/* ------------------------------------------------------------------
+   Landfill Detection console - visual language
+   Muted "mission control" palette that reads well in Streamlit's light
+   and dark themes. Colours are defined once and reused.
+   ------------------------------------------------------------------ */
+
+:root {
+  --ld-accent:   #2f7d6f;
+  --ld-accent-2: #1f5f7a;
+  --ld-hit:      #b5372f;
+  --ld-warn:     #b07d1f;
+  --ld-clean:    #2f7d4f;
+  --ld-muted:    rgba(128, 138, 148, 0.55);
+  --ld-surface:  rgba(128, 138, 148, 0.09);
+  --ld-border:   rgba(128, 138, 148, 0.28);
+}
+
+/* ---------- page header ---------- */
+.page-header {
+  border-left: 4px solid var(--ld-accent);
+  padding: 0.15rem 0 0.15rem 0.9rem;
+  margin: 0.1rem 0 1.4rem 0;
+}
+.page-title {
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+.page-subtitle {
+  font-size: 0.92rem;
+  opacity: 0.72;
+  margin-top: 0.22rem;
+  max-width: 62rem;
+}
+
+/* ---------- status pills ---------- */
+.pill {
+  display: inline-block;
+  padding: 0.16rem 0.62rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pill-ok  { background: rgba(47, 125, 79, 0.16);  color: #2f7d4f; border: 1px solid rgba(47,125,79,0.35); }
+.pill-bad { background: rgba(181, 55, 47, 0.14);  color: #b5372f; border: 1px solid rgba(181,55,47,0.35); }
+.pill-info{ background: rgba(31, 95, 122, 0.14);  color: #1f5f7a; border: 1px solid rgba(31,95,122,0.35); }
+
+/* ---------- verdict card ---------- */
+.verdict {
+  border-radius: 12px;
+  padding: 1.05rem 1.2rem;
+  margin: 0.5rem 0 0.9rem 0;
+  border: 1px solid var(--ld-border);
+  background: var(--ld-surface);
+}
+.verdict-text {
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.verdict-score {
+  font-size: 0.92rem;
+  opacity: 0.78;
+  margin-top: 0.25rem;
+  font-variant-numeric: tabular-nums;
+}
+.verdict-hit   { border-left: 6px solid var(--ld-hit);   }
+.verdict-hit   .verdict-text { color: var(--ld-hit);   }
+.verdict-warn  { border-left: 6px solid var(--ld-warn);  }
+.verdict-warn  .verdict-text { color: var(--ld-warn);  }
+.verdict-clean { border-left: 6px solid var(--ld-clean); }
+.verdict-clean .verdict-text { color: var(--ld-clean); }
+
+/* ---------- info cards on the home page ---------- */
+.card {
+  border: 1px solid var(--ld-border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  background: var(--ld-surface);
+  height: 100%;
+}
+.card h4 {
+  margin: 0 0 0.45rem 0;
+  font-size: 1.0rem;
+  font-weight: 700;
+}
+.card p {
+  margin: 0;
+  font-size: 0.88rem;
+  opacity: 0.82;
+  line-height: 1.5;
+}
+.card .step-num {
+  display: inline-block;
+  width: 1.5rem; height: 1.5rem;
+  line-height: 1.5rem;
+  text-align: center;
+  border-radius: 50%;
+  background: var(--ld-accent);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-right: 0.45rem;
+}
+
+/* ---------- misc ---------- */
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.small-note { font-size: 0.82rem; opacity: 0.7; }
+
+div[data-testid="stMetricValue"] { font-variant-numeric: tabular-nums; }
+
+/* tighten the default top padding a little */
+.block-container { padding-top: 2.2rem; }
